@@ -1,0 +1,1104 @@
+import java.util.*;
+
+public class Main //RestaurantManagementSystem
+{
+	public static void main (String[] args)
+  {
+    Scanner sc = new Scanner(System.in);
+
+    Customer customer;
+    Manager manager;
+    char choice;
+    char input;
+
+    do
+    {
+      System.out.println("\n\n============================RESTAURANT MANAGEMENT SYSTEM============================");
+      
+      do
+      {
+        System.out.println("\nPlease choose your choice: ");
+        System.out.println("C - Customer");
+        System.out.println("M - Manager");
+        System.out.println("E - Exit");
+        System.out.println("Enter choice: ");
+        choice = Character.toUpperCase(sc.next().charAt(0));
+          		    
+        if(choice == 'C')
+        {
+          //Direct to Customer class
+          customer = new Customer();
+          customer.setCustomer();
+        }
+        else if(choice == 'M')
+        {
+          //Direct to Management class
+          manager = new Manager();
+          manager.setManager();
+        }
+        else if(choice == 'E')
+        {
+          System.out.println("\nProgram will be terminated.");
+        }
+        else
+        {
+          System.out.println("\nInvalid role. Please input the correct role again.");
+        }
+      } while(choice != 'C' && choice != 'M' && choice != 'E');
+    } while(true); 
+  }
+}
+
+import java.util.*;
+import java.time.LocalDate;
+
+public class Manager 
+{
+  Scanner sc = new Scanner(System.in);
+
+  MenuModifier menuModifier;
+  Menu menu;
+  Sales sales;
+  Bill bill;
+
+  private String empId;
+  public final String ID = "emp123";
+  private String empPassword;
+  public final String PASSWORD = "pass456";
+  private int managerOption = 0;
+
+  public void setManager() 
+  {
+    System.out.println("\n\n==================================MANAGER PAGE==================================");
+
+    //Prompt for management Id
+    System.out.println("\nEnter your ID: ");
+    empId = sc.nextLine();
+
+    //Validate management Id
+    while (!empId.equalsIgnoreCase(ID)) 
+    {
+      System.out.println("Your ID is invalid. Please try again.");
+      System.out.println("\nEnter your id: ");
+      empId = sc.nextLine();
+    }
+
+    //Prompt for management password
+    System.out.println("\nEnter your password: ");
+    empPassword = sc.nextLine();
+
+    //Validate management password
+    while (!empPassword.equalsIgnoreCase(PASSWORD)) 
+    {
+      System.out.println("Your password is incorrect. Please try again.");
+      System.out.println("\nEnter your password: ");
+      empPassword = sc.nextLine();
+    }
+    
+    while (managerOption != 1 && managerOption != 2) 
+    {
+      System.out.println("\nWhat would you like to do?");
+      System.out.println("1. Modify menu details");
+      System.out.println("2. View sales");
+      System.out.println("Enter option:");
+      managerOption = sc.nextInt();
+
+      if (managerOption == 1) 
+      {
+        //Direct to modify menu details
+        menuModifier = new MenuModifier();
+        menu = new Menu();
+        menuModifier.manageMenu(menu.getFoodList());
+      } 
+        
+      else if (managerOption == 2) 
+      {
+        //Update and view sales
+        if(sales == null)
+        {
+          sales = new Sales(LocalDate.now(), 0);
+        }
+        
+        bill = new Bill();
+        sales.updateSales(sales.getSalesList(), bill.getGrandTotal());
+        sales.viewSales(sales.getSalesList());
+      } 
+        
+      else 
+      {
+        System.out.println("\nInvalid option. Please try again.\n");
+      }
+    }
+  }
+}
+
+import java.util.*;
+import java.util.ArrayList;
+
+//Child class of Menu class
+public class MenuModifier extends Menu
+{
+  Scanner sc = new Scanner(System.in);
+
+  private int modifyChoice;
+  private int newId;
+  private String newDesc;
+  private double newPrice;
+  private char response;
+
+  private boolean menuModified = false;
+
+  public void setMenuModified(boolean menuModified) 
+  {
+    this.menuModified = menuModified;
+  }
+  
+  public boolean getMenuModified() 
+  {
+    return menuModified;
+  }
+
+  public void updateMenu(ArrayList<Food> newFoodList) 
+  {
+    foodList = newFoodList;
+    menuModified = true;
+  }
+  
+	public void manageMenu(ArrayList<Food> foodList)
+	{
+    System.out.println("\n\n====================================MANAGE MENU====================================");
+    
+    System.out.println("What would you like to do?");
+    System.out.println("1. Add item to menu");
+    System.out.println("2. Remove item from menu");
+    System.out.println("Enter your choice:");
+    modifyChoice = sc.nextInt();
+       
+    switch(modifyChoice) 
+    {
+      case 1:
+        addItem(foodList);
+        break;
+      case 2:
+        removeItem(foodList);
+        break;
+      default:
+        System.out.println("Invalid choice. Please try again.");
+    }
+  }
+
+  //Add item to menu
+  public void addItem(ArrayList<Food> foodList) 
+  {
+    System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ADD FOOD ITEM~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+
+    boolean continueAdding = true;
+    while(continueAdding)
+    {
+      boolean itemExists = true;
+      
+      do
+      {
+        System.out.println("Enter the ID of the item to add:");
+        
+        while(!sc.hasNextInt()) 
+        {
+          System.out.println("Invalid input. Please enter numbers only.\n");
+          System.out.println("Enter the ID of the item to add: ");
+          sc.next();
+        }
+
+        newId = sc.nextInt();
+        sc.nextLine();
+        
+        //Check if the id exists
+        itemExists = false;
+        for(int i = 0; i < foodList.size(); i++)
+        {
+          if(foodList.get(i).getFoodId() == newId)
+          {
+            itemExists = true;
+            System.out.println("\nId already exists. Please try again.\n");
+            break;
+          }
+        }
+      } while(itemExists);
+
+      System.out.println("\nEnter food description:");
+      newDesc = sc.nextLine();
+      
+      System.out.println("\nEnter food price:");
+      newPrice = sc.nextDouble();
+    
+      //Add new item to the end of the ArrayLists
+      Food newItem = new Food(newId, newDesc, newPrice);
+      foodList.add(newItem);
+      menuModified = true;
+      
+      System.out.println("Item successfully added.");
+
+      //Ask if user wants to add another item
+      System.out.println("\nDo you want to add another item? (Y/N)");
+      response = Character.toUpperCase(sc.next().charAt(0));
+
+      System.out.println();
+      
+      if(response == 'N') 
+      {
+        continueAdding = false;
+
+        //Display updated menu
+        displayNewMenu(foodList);
+        System.out.println();
+      }
+    }
+  }
+
+  //Remove item from menu
+  public void removeItem(ArrayList<Food> foodList)
+  {
+    System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~REMOVE FOOD ITEM~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+
+    boolean continueRemoving = true;
+    while(continueRemoving)
+    {
+      int index = -1;
+      
+      do
+      {
+        System.out.println("Enter the ID of the item to remove:");
+        newId = sc.nextInt();
+        sc.nextLine();
+        
+        //Find the index of the item in the array
+        for(int i = 0; i < foodList.size(); i++)
+        {
+          if(foodList.get(i).getFoodId() == newId) 
+          {
+            index = i;
+            break;
+          }
+        }
+  
+        if(index == -1)
+        {
+          System.out.println("ID not found. Please try again.\n");
+        }
+      } while(index == -1);
+    
+      //Item found - remove from ArrayLists
+      foodList.remove(index);
+      menuModified = true;
+      
+      System.out.println("Item successfully removed.");
+      
+      //Ask if user wants to remove another item
+      System.out.println("\nDo you want to remove another item? (Y/N)");
+      response = Character.toUpperCase(sc.next().charAt(0));
+
+      System.out.println();
+      
+      if(response == 'N') 
+      {
+        continueRemoving = false;
+
+        //Display updated menu
+        displayNewMenu(foodList);
+        System.out.println();
+      }
+    }
+  }
+
+  public void displayNewMenu(ArrayList<Food> foodList)
+  {
+    System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NEW MENU~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+    System.out.println("\nFood Id " + "\tFood Description " + "\t Food Price (RM) ");
+    
+    for(Food food : foodList) 
+    {
+      System.out.println(food.toString());
+    }
+  } 
+}
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+
+public class Sales 
+{
+  private LocalDate date;
+  private double totalSales;
+
+  private ArrayList<Sales> salesList = new ArrayList<Sales>();
+
+  public ArrayList<Sales> getSalesList() 
+  {
+    return salesList;
+  }
+  
+  public Sales(LocalDate date, double totalSales)
+  {
+    this.date = date;
+    this.totalSales = totalSales;
+  }
+
+  public void updateSales(ArrayList<Sales> salesList, double grandTotal)
+  {
+    for(Sales s : salesList)
+    {
+      if(s.date.equals(LocalDate.now()))
+      {
+        s.totalSales += grandTotal; 
+        return;
+      }
+    }
+  
+    //If no entry for current date - create new entry
+    Sales newSales = new Sales(LocalDate.now(), grandTotal);
+    salesList.add(newSales);
+  }
+
+  public void viewSales(ArrayList<Sales> salesList)
+  {
+    System.out.println("\n\n=======================================SALES=======================================");
+
+    System.out.println("Date: " + LocalDate.now());
+    
+    for(Sales s : salesList)
+    {
+      if(s.date.equals(LocalDate.now()))
+      {
+        System.out.println("Total sales for today: RM" + String.format("%.2f", s.totalSales));
+        return;
+      }
+    }
+
+    //If no entry for current date - print zero sales
+    System.out.println("Total sales for today: RM0.00");
+  }
+}
+
+import java.util.*;
+
+public class Customer
+{
+  Scanner sc = new Scanner(System.in);
+  
+  TableNumber tableNumber;
+  
+	private String name;
+  
+	public void setCustomer()
+	{
+	  System.out.println("\n\n===================================CUSTOMER PAGE==================================="); 
+
+    System.out.println("\nEnter your name: ");
+	  name = sc.nextLine();
+
+    //Check that name does not contains any digits
+    while(name.matches(".*\\d.*"))
+    {
+      System.out.println("\nPlease enter a valid name.");
+      System.out.println("\nEnter your name: ");
+	    name = sc.nextLine();
+    }
+    
+    System.out.println("Welcome, " + name + "!\n");
+
+    //Direct to TableNumber class
+    tableNumber = new TableNumber();
+    tableNumber.registerTableNumber();
+  }
+}      	
+
+import java.util.*;
+
+public class TableNumber 
+{
+  Scanner sc = new Scanner(System.in);
+
+  Menu menu;
+  OrderSystem orderSystem;
+  
+  private String[] tableNo = { "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10" };
+  private String tableNoInput;
+  private int option;
+
+  //Access by orderSystem
+  private ArrayList<Food> foodList = new ArrayList<Food>();
+
+  public void registerTableNumber() 
+  {
+    System.out.println("\n\n====================================TABLE NUMBER===================================="); 
+
+    System.out.println("\nEnter table number (T1 - T10): ");
+    tableNoInput = sc.nextLine();
+
+    //Validate table number
+    while (!Arrays.asList(tableNo).contains(tableNoInput.toUpperCase())) 
+    {
+      System.out.println("Table number is invalid. Please enter table number from T1 to T10 only.");
+      System.out.println("\nEnter table number (T1-T10): ");
+      tableNoInput = sc.nextLine();
+    }
+
+    do
+    {
+      System.out.println("\nWhat would you like to do?");
+      System.out.println("1 - View menu");
+      System.out.println("2 - Order food");
+      System.out.println("Enter option: ");
+      option = sc.nextInt();
+        		    
+      if(option == 1)
+      {
+        menu = new Menu();
+        menu.viewMenu();
+      }
+      else if(option == 2)
+      {
+        //If the user chooses to order directly without viewing the menu, pass the foodList from Menu to OrderSystem 
+        if(menu == null) 
+        {
+          menu = new Menu();
+        }
+        
+        orderSystem = new OrderSystem(menu.getFoodList());
+		    orderSystem.makeOrder();
+      }
+      else
+      {
+        System.out.println("\nInvalid option. Please input the correct option again.");
+      }
+    } while(option != 1 && option != 2);
+  }
+}
+
+public class Food
+{
+  private int foodId;
+  private String foodDesc;
+  private double foodPrice;
+    
+  public Food(int fId, String fDesc, double fPrice)
+  {
+    this.foodId = fId;
+    this.foodDesc = fDesc;
+    this.foodPrice = fPrice;
+  }
+
+  //For OrderSystem and MenuModifier class to use
+  public int getFoodId()
+  {
+    return foodId;
+  }
+  
+  public String getFoodDesc()
+  {
+    return foodDesc;
+  }
+    
+  public double getFoodPrice()
+  {
+    return foodPrice;
+  }
+    
+  public String toString()
+  {
+    return foodId + "\t\t\t" + foodDesc + "\t\t\t     " + String.format("%.2f", foodPrice);
+  }
+}
+
+import java.util.*;
+import java.util.ArrayList;
+
+//Parent class of MenuModifier class
+public class Menu
+{
+  Scanner sc = new Scanner(System.in);
+
+  MenuModifier menuModifier;
+  OrderSystem orderSystem;
+
+  //Access by orderSystem
+  protected ArrayList<Food> foodList = new ArrayList<Food>();
+  
+  protected char choice;
+  
+  public Menu()
+  {
+    foodList.add(new Food(123, "Burger", 12.90));
+    foodList.add(new Food(234, "Pasta", 13.50));
+	  foodList.add(new Food(345, "Pizza", 17.20));
+		foodList.add(new Food(456, "Salad", 8.30));
+    foodList.add(new Food(567, "Tacos", 11.70));
+
+  }
+
+  //For MenuModifier to access
+  public ArrayList<Food> getFoodList() 
+  {
+    return foodList;
+  }
+
+  
+  public void viewMenu()
+  {
+    System.out.println("\n\n========================================MENU========================================");
+
+    //Initialize menuModifier if it is null
+    if(menuModifier == null)
+    {
+      menuModifier = new MenuModifier();
+    }
+
+    //New menu
+    if(menuModifier.getMenuModified())
+    {
+      menuModifier.displayNewMenu(menuModifier.getFoodList());
+      //menuModifier.setMenuModified(false);
+      foodList = menuModifier.getFoodList(); //Update the food list with the modified menu
+    }
+   
+    //Original Menu
+    else 
+    {
+      System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ORIGINAL MENU~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+  
+      System.out.println("Food Id " + "\tFood Description " + "\t Food Price (RM) ");
+
+      //Loop and display id, desc and price
+      for(int i = 0; i < foodList.size(); i++)
+      {
+        System.out.println(foodList.get(i)); 
+      }
+    }
+  
+    do
+    {
+      System.out.println("\nDo you want to order? (Y/N) ");
+      choice = Character.toUpperCase(sc.next().charAt(0));
+        		    
+      if(choice == 'Y')
+      {
+        orderSystem = new OrderSystem(foodList);
+		    orderSystem.makeOrder();
+      }
+      else if(choice == 'N')
+      {
+        System.out.println("\nThank you. Have an amazing day!");
+      }
+      else
+      {
+        System.out.println("Invalid choice. Please enter only Y or N.");
+      }
+    } while(choice != 'Y' && choice != 'N');
+  }
+}
+
+public class Order 
+{
+  private int id;
+  private String desc;
+  private double price;
+  private int qty;
+    
+  public Order(int oId, String oDesc, double oPrice, int oQty) 
+  {  
+    this.id = oId;
+    this.desc = oDesc;
+    this.price = oPrice;
+    this.qty = oQty;
+  }
+
+  public void setQty(int qty)
+  {
+    this.qty = qty;
+  }
+  
+  public int getId() 
+  {
+    return id;
+  } 
+    
+  public String getDesc() 
+  {
+    return desc;
+  }
+    
+  public double getPrice() 
+  {
+    return price;
+  }
+    
+  public int getQty()   
+  {
+    return qty;
+  }
+
+  public String toString()
+    {
+      return id + "\t\t\t" + desc + "\t\t\t     " + String.format("%.2f", price) + "\t\t\t     " + qty;
+
+    }
+}
+
+import java.util.*;
+
+public class OrderSystem
+{
+  Scanner sc = new Scanner(System.in); 
+
+  Food food;
+  Bill bill;
+
+  private ArrayList<Food> foodList = new ArrayList<Food>();
+  private ArrayList<Order> orderList = new ArrayList<Order>();
+
+  private int oId;
+  private String oDesc;
+  private double oPrice;
+  private int oQty;
+  private char continueOrder;
+  private char modifyOrder;
+  private char addOrRemove;
+  private int indexToRemove;
+  private int currentQty;
+
+  public OrderSystem(ArrayList<Food> foodList) 
+  {
+    this.foodList = foodList;
+  }
+
+  public void makeOrder()
+  {
+    System.out.println("\n\n=======================================ORDER=======================================");
+    
+    do
+    {
+      boolean validId = false;
+      
+      System.out.println("\nEnter the food id that you want to order: ");
+
+      try
+      {
+        oId = sc.nextInt();
+
+        for(int i = 0; i < foodList.size(); i++) 
+        {
+          //Check if the entered food id is in the menu
+          if(foodList.get(i).getFoodId() == oId)
+          {
+            while(true)
+            {
+              System.out.println("\nEnter the quantity that you want to order: ");
+              oQty = sc.nextInt();
+          
+              if(oQty <= 0) 
+              {
+                System.out.println("Invalid quantity. Please enter a quantity greater than 0.");
+                validId = false;
+              } 
+                
+              else 
+              {
+                //Get the corresponding food object and set the description and price
+                food = foodList.get(i);
+                oDesc = food.getFoodDesc();
+                oPrice = food.getFoodPrice();
+                  
+                //Add the item to the orderList
+                orderList.add(new Order(oId, oDesc, oPrice, oQty));
+                    
+                System.out.println("\nDo you want to order more food? (Y/N)");
+                continueOrder = Character.toUpperCase(sc.next().charAt(0));
+                validId = true;
+              }
+  
+              if(validId)
+              {
+                break;
+              }
+            }
+            break;
+          }   
+        }
+          
+        if(!validId)
+        {
+          System.out.println("Invalid food id. Please try again.");
+          continueOrder = 'Y';
+        }
+      }
+        
+      catch(InputMismatchException e)
+      {
+          System.out.println("Invalid input. Please enter a valid food id.");
+          sc.nextLine();
+          continueOrder = 'Y';
+      }
+    } while(continueOrder == 'Y');
+  
+    if(!orderList.isEmpty()) 
+    {
+      viewOrder();
+    }
+      
+    //Direct to bill page
+    Bill bill = new Bill(orderList); 
+    bill.viewBill();
+  }
+
+  public void viewOrder()
+  {
+    System.out.println("\n\n===================================ORDER SUMMARY===================================");  
+ 
+    System.out.println("Food Id " + "\tFood Description " + "\t Food Price (RM) "  + "\t Quantity");
+
+    //Loop and display order list with food id, desc and price
+    for(int i = 0; i < orderList.size(); i++)
+    {
+      System.out.println(orderList.get(i));
+    }
+
+    do
+    {
+      System.out.println("\nDo you want to modify the order? (Y/N)");
+      modifyOrder = Character.toUpperCase(sc.next().charAt(0));
+      
+      if(modifyOrder == 'Y')
+      {
+        System.out.println("\nEnter 'A' to add new item or 'R' to remove existing item: ");
+        addOrRemove = Character.toUpperCase(sc.next().charAt(0));
+  
+        if(addOrRemove == 'A')
+        {
+          boolean validId = false;
+
+          do
+          {
+            try
+            {
+              System.out.println("\nEnter the food id that you want to add: ");
+              oId= sc.nextInt();
+        
+              for(int i = 0; i < foodList.size(); i++) 
+              {
+                //Check if the entered food id is in the menu
+                if(foodList.get(i).getFoodId() == oId)
+                {
+                  do
+                  {
+                    System.out.println("\nEnter the quantity that you want to add: ");
+                    oQty = sc.nextInt();
+    
+                    if (oQty <= 0) 
+                    {
+                      System.out.println("Invalid quantity. Please enter a quantity greater than 0.");
+                      validId = false;
+                    } 
+                  } while(oQty <= 0);
+                  
+                  //Get the corresponding food object and set the description and price
+                  food = foodList.get(i);
+                  oDesc = food.getFoodDesc();
+                  oPrice = food.getFoodPrice();
+                    
+                  //Add the item to the orderList
+                  orderList.add(new Order(oId, oDesc, oPrice, oQty));
+                  System.out.println("\nItem added to the order.");
+                
+                  viewOrder(); 
+  
+                  //Direct to bill page
+                  Bill bill = new Bill(orderList); 
+                  bill.viewBill();
+                  
+                  validId = true;
+                }      
+              }
+              if (!validId) 
+              {
+                System.out.println("Invalid food id. Please try again.");
+              }
+            }
+
+            catch(InputMismatchException e)
+            {
+              System.out.println("\nInvalid input. Please enter a valid food id.");
+              sc.next();  
+            }
+          } while(!validId);
+        }
+  
+        else if(addOrRemove == 'R')
+        {
+          boolean validId = false;
+          indexToRemove = 0;
+          
+          do
+          {
+            try
+            {
+              System.out.println("\nEnter the food id that you want to remove: ");
+              oId = sc.nextInt();
+            }
+
+            catch(InputMismatchException e)
+            {
+              System.out.println("Invalid input. Please enter a valid food id.");
+              sc.next();
+              continue;
+            }
+            
+            for(int i = 0; i < orderList.size(); i++) 
+            {
+              //Check if the entered food id is in the orderList
+              if(orderList.get(i).getId() == oId)
+              { 
+                indexToRemove = i;
+
+                try
+                {
+                  System.out.println("\nEnter the quantity that you want to remove: ");
+                  oQty = sc.nextInt();
+                }
+
+                catch(InputMismatchException e)
+                {
+                  System.out.println("Invalid input. Please enter a valid integer.");
+                  sc.next(); 
+                  continue; 
+                }
+  
+                //Update the quantity of the item 
+                currentQty = orderList.get(indexToRemove).getQty();
+  
+                if(currentQty > oQty)
+                {
+                  orderList.get(indexToRemove).setQty(currentQty - oQty);
+                  System.out.println("\nItem quantity updated in the order.");
+                }
+                  
+                else if(currentQty == oQty)
+                {
+                  //Remove the item to the orderList
+                  orderList.remove(indexToRemove);
+                  System.out.println("\nItem removed from the order.");
+                  
+                  validId = true; 
+                  break;
+                }
+                
+                else
+                {
+                  System.out.println("\nInvalid quantity. Please enter a quantity less than or equal to " + currentQty + ".\n");
+                } 
+
+                validId = true;
+              }  
+            }
+            if (!validId) 
+            {
+              System.out.println("\nInvalid food id. Please try again.");
+            }
+          } while(!validId);
+
+          viewOrder();
+          
+          //Direct to bill page
+          Bill bill = new Bill(orderList); 
+          bill.viewBill();
+        }
+      }   
+
+      else if(modifyOrder == 'N')
+      {
+        //Direct to bill page
+        Bill bill = new Bill(orderList); 
+        bill.viewBill();
+      }
+        
+      else
+      {
+        System.out.println("\nInvalid input. Please try again.");
+      }
+    } while(modifyOrder != 'Y' && modifyOrder != 'N');
+  }
+}
+
+import java.time.LocalDate;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
+import java.util.Random;
+import java.util.ArrayList;
+
+public class Bill 
+{
+  Payment payment;
+
+  private ArrayList<Order> orderList = new ArrayList<Order>();
+  
+  private LocalDate date;
+  private int billNo;
+  private double totalPrice;
+  private double grandTotal;
+
+  public Bill()
+  {
+    
+  }
+  
+  //Access orderList from the OrderSystem class
+  public Bill(ArrayList<Order> orderList)
+  {
+    this.orderList = orderList;
+  }
+
+  public Bill(LocalDate date, double grandTotal)
+  {
+    this.date = date;
+    this.grandTotal = grandTotal;
+  }
+
+  public LocalDate getDate()
+  {
+    return date;
+  }
+  
+  public double getGrandTotal()
+  {
+    return grandTotal;
+  }
+
+  public void viewBill() 
+  {
+    System.out.println("\n\n========================================BILL========================================");    
+    System.out.println("\t\t\t\t\t\t\t\t   Restaurant DAV");
+    System.out.println("\t\t    Lot A123-124, Utropolis Glenmarie, 40150 Shah Alam, Selangor.\n"); 
+
+    //Display order date
+    LocalDate date = LocalDate.now();
+
+    System.out.println("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t    Date: " + date);
+
+    //Display order time
+    Date localTime = new Date();
+    DateFormat gmt = new SimpleDateFormat("HH:mm:ss");
+    gmt.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+    System.out.println("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t    Time: " + gmt.format(localTime));
+
+    //Generate bill number
+    billNo = new Random().nextInt(1000);
+    
+    System.out.println("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t    Bill No.: " + billNo);
+
+    System.out.println("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Item Details~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+
+    //Display order made
+    System.out.println("Food Id " + "\tFood Description " + "\tFood Price (RM) " + "\tQuantity" + "\t   Total Price (RM)");
+    
+    //Loop through the orderList
+    for(int i = 0; i < orderList.size(); i++) 
+    {
+      totalPrice = orderList.get(i).getPrice() * orderList.get(i).getQty();
+        
+      System.out.println(orderList.get(i).getId() + "\t\t\t" + orderList.get(i).getDesc() + "\t\t\t\t" + String.format("%.2f", orderList.get(i).getPrice()) + "\t\t\t    " + orderList.get(i).getQty() + "\t\t\t   " + String.format("%.2f", totalPrice));
+
+      grandTotal += totalPrice;
+    }
+    
+    System.out.println("\nGrand total: RM" + String.format("%.2f", grandTotal));
+
+    //Direct to payment page
+    payment = new Payment(grandTotal);
+    payment.makePayment();
+  }
+}
+
+import java.util.*;
+
+public class Payment 
+{
+  Scanner sc = new Scanner(System.in);
+
+  Main Main;
+  
+  private char choice;
+  private double balance;
+  private double grandTotal;
+  private double amountPaid;
+
+  //Access grandTotal from the Payment class
+  public Payment(double grandTotal)
+  {
+    this.grandTotal = grandTotal;
+  }
+  
+  public void makePayment()
+  {
+    boolean paymentSuccessful = false;
+    
+    do
+    {
+      System.out.println("\n\n======================================PAYMENT======================================"); 
+
+      System.out.println("\nWould you like to make payment? (Y/N) ");
+      choice = Character.toUpperCase(sc.next().charAt(0));
+      
+      if(choice == 'Y')
+      {
+        //Display amount for users to pay
+        System.out.println("Please pay the total amount of RM" + String.format("%.2f", grandTotal));
+        System.out.println("\nPlease enter the amount paid: ");
+        amountPaid = sc.nextDouble();
+
+        //Calculate balance
+        balance = amountPaid - grandTotal;
+
+        if(balance >= 0)
+        {
+          System.out.println("The balance is RM" + String.format("%.2f", balance));
+          System.out.println("\nThank you for making payment. Please come again next time.");
+          paymentSuccessful = true;
+
+          Main = new Main();
+          Main.main(new String[]{});
+        }
+
+        else
+        {
+          System.out.println("Amount paid is not enough. Please pay the correct amount.");
+
+          while (balance < 0) 
+          {
+            System.out.println("\nEnter the amount paid: ");
+            amountPaid = sc.nextDouble();
+            
+            balance = amountPaid - grandTotal;
+
+            System.out.println("The balance is RM" + String.format("%.2f", balance));
+            System.out.println("\nThank you for making payment. Please come again next time.");
+            
+            Main = new Main();
+            Main.main(new String[]{});
+          }
+        }
+      }
+      else if(choice == 'N')
+      {
+        System.out.println("Please pay for your order. Thank you.");
+      }
+      else
+      {
+        System.out.println("Invalid choice. Please choose again.");
+      }
+    } while(!paymentSuccessful);
+  }
+   public double getAmountPaid() {
+    return amountPaid;
+  }
+}
